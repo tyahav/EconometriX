@@ -1,3 +1,5 @@
+# *** Smoothed Version ***
+
 import pandas as pd
 import numpy as np
 import requests
@@ -6,14 +8,7 @@ import time
 from datetime import datetime
 
 def getBitcoinPrice():
-  dataOK = False
-  while not dataOK:
-    try:
-      bit_data = pd.read_json("https://blockchain.info/ticker")
-      dataOK = True
-    except:
-      time.sleep(1)
-
+  bit_data = pd.read_json("https://blockchain.info/ticker")
   return bit_data['USD']['last']
 
 def writeData(data, profit):
@@ -45,8 +40,9 @@ BUY_PROFIT_EXP = 1.0
 SELL_PROFIT_EXP = -0.01
 PRICE_COUNT_LIMIT_BUY_MAX = 50
 PRICE_COUNT_LIMIT_BUY_MINMAX = 15
+PRICE_SMOOTH_WINDOW = 5
 
-profit = 1.0
+profit = 1.2885074331785829
 
 buy_time = []
 sell_prof_time = []
@@ -65,7 +61,9 @@ position = 'buy'
 
 while True:
   
-  current_val = getBitcoinPrice()  
+  prev_values.append(getBitcoinPrice())
+  
+  current_val =   prev_values[-1*PRICE_SMOOTH_WINDOW]
   
   if position == 'buy':
     # check stats
@@ -97,5 +95,5 @@ while True:
       data_string = str(datetime.now().time()) + ' : sell value = ' + str(next_val) + '\n' + str(datetime.now().time()) + ' : *** profit = ' + str(profit)
       writeData(data_string, profit)
 
-  prev_values.append(current_val)
+  
   time.sleep(SLEEP_STEP_SEC)
